@@ -88,6 +88,90 @@ const ProjectSkeleton = () => (
     </div>
 );
 
+// Fallback card for config projects when API fails
+const FallbackProjectCard = ({ project, index }) => {
+    const size = getProjectSize(index);
+
+    return (
+        <motion.a
+            href={project.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            variants={itemAnimation}
+            className={`relative group ${size}`}
+        >
+            <div
+                className="
+                    bg-black
+                    border-white/30
+                    border 
+                    p-3 sm:p-4 md:p-5
+                    rounded-xl sm:rounded-2xl
+                    backdrop-blur-md 
+                    cursor-pointer
+                    relative overflow-hidden
+                    h-full
+                    w-full
+                    min-h-[120px] sm:min-h-[140px]
+                    flex flex-col
+                    shadow-[0_4px_6px_rgba(0,0,0,0.5),0_0_10px_rgba(255,255,255,0.05)]
+                    transition-all duration-300
+                    group-hover:border-white/60
+                    group-hover:shadow-[0_4px_6px_rgba(0,0,0,0.5),0_0_20px_rgba(255,255,255,0.1)]
+                "
+            >
+                {/* Shiny overlay effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent shiny-sweep" />
+                </div>
+
+                {/* Glossy shine effect */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300">
+                    <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/40 to-transparent rounded-t-2xl" />
+                </div>
+
+                <div className="relative flex flex-col gap-2 sm:gap-3 w-full z-10 h-full justify-between">
+                    <div className="flex flex-col gap-2 sm:gap-3">
+                        <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center space-x-1.5 sm:space-x-2 flex-1 min-w-0">
+                                <FaGithub className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-white flex-shrink-0" />
+                                <h3 className="font-bold text-white text-[10px] sm:text-xs md:text-sm truncate">
+                                    {project.title}
+                                </h3>
+                            </div>
+                            <HiExternalLink className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-white/60 group-hover:text-white transition-colors flex-shrink-0" />
+                        </div>
+
+                        <p className="text-[10px] sm:text-xs text-white/70 line-clamp-2 sm:line-clamp-3 leading-relaxed">
+                            {project.description || "No description provided"}
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5 sm:gap-2 mt-auto">
+                        {project.technologies && project.technologies.length > 0 && (
+                            <div className="flex flex-wrap gap-1 sm:gap-1.5">
+                                {project.technologies.slice(0, 3).map((tech) => (
+                                    <span
+                                        key={tech}
+                                        className="text-[9px] sm:text-[10px] md:text-xs bg-white/10 text-white px-1 sm:px-1.5 md:px-2 py-0.5 rounded-full border border-white/20"
+                                    >
+                                        {tech}
+                                    </span>
+                                ))}
+                                {project.technologies.length > 3 && (
+                                    <span className="text-[9px] sm:text-[10px] text-white/50">
+                                        +{project.technologies.length - 3}
+                                    </span>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </motion.a>
+    );
+};
+
 const ErrorAlert = ({ error, onRetry }) => (
     <Alert variant="destructive" className="col-span-full">
         <FaExclamationCircle className="w-4 h-4" />
@@ -319,7 +403,10 @@ const GithubProjects = () => {
                                     </div>
                                 ))
                             ) : error ? (
-                                <ErrorAlert error={error} onRetry={handleRetry} />
+                                // Show fallback projects from config when API fails
+                                config.projects.map((project, index) => (
+                                    <FallbackProjectCard key={project.id} project={project} index={index} />
+                                ))
                             ) : (
                                 projects.map((project) => (
                                     <ProjectCard key={project.id} project={project} size={project.size} />
